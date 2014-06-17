@@ -25,6 +25,11 @@
 
 @implementation MHGalleryImageViewerViewController
 
+- (id)init{
+    self = [super init];
+    return self;
+}
+
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     
@@ -279,9 +284,15 @@
         [self.navigationController pushViewController:share
                                              animated:YES];
     }else{
-        UIActivityViewController *act = [UIActivityViewController.alloc initWithActivityItems:@[[(MHImageViewController*)self.pageViewController.viewControllers.firstObject imageView].image] applicationActivities:nil];
+        NSArray *items = @[[(MHImageViewController*)self.pageViewController.viewControllers.firstObject imageView].image];
+        UIActivityViewController *act = nil;
+        if ([self.delegate respondsToSelector:@selector(galleryImageViewerVC:withItems:barButton:)]) {
+            act = [self.delegate galleryImageViewerVC:self withItems:items barButton:self.shareBarButton];
+        }
+        if (!act) {
+            act = [UIActivityViewController.alloc initWithActivityItems:items applicationActivities:nil];
+        }
         [self presentViewController:act animated:YES completion:nil];
-        
     }
 }
 

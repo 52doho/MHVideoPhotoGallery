@@ -177,6 +177,7 @@
             MHGalleryImageViewerViewController *detail = MHGalleryImageViewerViewController.new;
             detail.galleryItems = self.galleryItems;
             detail.pageIndex = recognizer.indexPath.row;
+            detail.delegate = self.galleryViewController.imageViewerViewController.delegate;
             self.startScale = recognizer.scale/8;
             [self.navigationController pushViewController:detail
                                                  animated:YES];
@@ -243,6 +244,7 @@
     MHGalleryImageViewerViewController *detail = MHGalleryImageViewerViewController.new;
     detail.pageIndex = indexPath.row;
     detail.galleryItems = self.galleryItems;
+    detail.delegate = self.galleryViewController.imageViewerViewController.delegate;
     if ([self.navigationController isKindOfClass:MHGalleryController.class]) {
         [self.navigationController pushViewController:detail animated:YES];
     }

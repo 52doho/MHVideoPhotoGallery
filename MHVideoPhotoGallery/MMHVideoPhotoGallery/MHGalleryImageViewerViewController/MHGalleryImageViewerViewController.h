@@ -19,6 +19,7 @@
 @end
 
 
+@protocol MHGalleryImageViewerViewControllerDelegate;
 @interface MHGalleryImageViewerViewController : UIViewController<UIPageViewControllerDelegate,UIPageViewControllerDataSource,UINavigationControllerDelegate,UIScrollViewDelegate,UIGestureRecognizerDelegate,UINavigationBarDelegate>
 
 @property (nonatomic, strong)          NSArray *galleryItems;
@@ -32,6 +33,7 @@
 @property (nonatomic, strong)          MHTransitionPresentMHGallery *interactivePresentationTranstion;
 @property (nonatomic, strong)          MHTransitionCustomization *transitionCustomization;
 @property (nonatomic,strong)           MHUICustomization *UICustomization;
+@property (nonatomic, weak)          id<MHGalleryImageViewerViewControllerDelegate>delegate;
 
 @property (nonatomic,getter = isUserScrolling)                   BOOL userScrolls;
 @property (nonatomic,getter = isHiddingToolBarAndNavigationBar)  BOOL hiddingToolBarAndNavigationBar;
@@ -42,6 +44,14 @@
 -(void)changeToPauseButton;
 -(void)changeToPlayButton;
 @end
+
+
+@protocol MHGalleryImageViewerViewControllerDelegate <NSObject>
+@optional
+- (UIActivityViewController *)galleryImageViewerVC:(MHGalleryImageViewerViewController *)galleryImageViewerVC withItems:(NSArray *)items barButton:(UIBarButtonItem *)barButton;
+
+@end
+
 
 @interface MHImageViewController : UIViewController<UIScrollViewDelegate,UIGestureRecognizerDelegate>
 
@@ -70,5 +80,5 @@
 -(void)centerImageView;
 
 +(MHImageViewController *)imageViewControllerForMHMediaItem:(MHGalleryItem*)item
-                                           viewController:(MHGalleryImageViewerViewController*)viewController;
+                                             viewController:(MHGalleryImageViewerViewController*)viewController;
 @end
