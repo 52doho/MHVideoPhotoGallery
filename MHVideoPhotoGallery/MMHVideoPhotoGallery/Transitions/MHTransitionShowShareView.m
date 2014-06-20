@@ -113,7 +113,9 @@
             cell = cellsSorted[1];
         }else{
             if (MHISIPAD) {
-                cell = cellsSorted[cellsSorted.count/2];
+                NSUInteger index = cellsSorted.count/2;
+                if (index < cellsSorted.count)
+                    cell = cellsSorted[index];
             }else{
                 if ([fromViewController.collectionView numberOfItemsInSection:0]-1 == [[self sortObjectsWithFrame:visible].lastObject tag]) {
                     cell =  cellsSorted.lastObject;

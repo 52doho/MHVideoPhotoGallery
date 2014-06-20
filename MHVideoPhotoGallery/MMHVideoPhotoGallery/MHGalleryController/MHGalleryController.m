@@ -55,8 +55,20 @@
     _interactivePresentationTransition = interactivePresentationTranstion;
 }
 
+- (void)deleteItemIndex:(NSInteger)index
+{
+    if (index >=0 && index < _galleryItems.count) {
+        NSMutableArray *aryItems = [NSMutableArray arrayWithArray:_galleryItems];
+        [aryItems removeObjectAtIndex:index];
+        self.galleryItems = aryItems;
+    }
+}
+
 -(MHGalleryItem *)itemForIndex:(NSInteger)index{
-    return self.galleryItems[index];
+    if (index >= 0 && index < self.galleryItems.count)
+        return self.galleryItems[index];
+    else
+        return nil;
 }
 -(NSInteger)numberOfItemsInGallery:(MHGalleryController *)galleryController{
     return self.galleryItems.count;

@@ -18,6 +18,7 @@
 @interface MHGalleryImageViewerViewController()
 @property (nonatomic, strong) UIActivityViewController *activityViewController;
 @property (nonatomic, strong) UIBarButtonItem          *shareBarButton;
+@property (nonatomic, strong) UIBarButtonItem          *organizeBarButton;
 @property (nonatomic, strong) UIBarButtonItem          *leftBarButton;
 @property (nonatomic, strong) UIBarButtonItem          *rightBarButton;
 @property (nonatomic, strong) UIBarButtonItem          *playStopBarButton;
@@ -168,9 +169,17 @@
     self.shareBarButton = [UIBarButtonItem.alloc initWithBarButtonSystemItem:UIBarButtonSystemItemAction
                                                                       target:self
                                                                       action:@selector(sharePressed)];
-    
-    if (self.UICustomization.hideShare) {
+    if (self.UICustomization.hideShareButton) {
         self.shareBarButton = [UIBarButtonItem.alloc initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace
+                                                                          target:self
+                                                                          action:nil];
+    }
+    
+    self.organizeBarButton = [UIBarButtonItem.alloc initWithBarButtonSystemItem:UIBarButtonSystemItemOrganize
+                                                                      target:self
+                                                                      action:@selector(organizePressed)];
+    if (self.UICustomization.hideOrganizeButton) {
+        self.organizeBarButton = [UIBarButtonItem.alloc initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace
                                                                           target:self
                                                                           action:nil];
     }
@@ -281,10 +290,13 @@
         MHShareViewController *share = [MHShareViewController new];
         share.pageIndex = self.pageIndex;
         share.galleryItems = self.galleryItems;
-        [self.navigationController pushViewController:share
-                                             animated:YES];
+        [self.navigationController pushViewController:share animated:YES];
     }else{
-        NSArray *items = @[[(MHImageViewController*)self.pageViewController.viewControllers.firstObject imageView].image];
+        UIImage *image = [(MHImageViewController*)self.pageViewController.viewControllers.firstObject imageView].image;
+        NSMutableArray *items = [NSMutableArray array];
+        if (image) {
+            [items addObject:image];
+        }
         UIActivityViewController *act = nil;
         if ([self.delegate respondsToSelector:@selector(galleryImageViewerVC:withItems:barButton:)]) {
             act = [self.delegate galleryImageViewerVC:self withItems:items barButton:self.shareBarButton];
@@ -294,6 +306,13 @@
         }
         [self presentViewController:act animated:YES completion:nil];
     }
+}
+
+- (void)organizePressed{
+    MHShareViewController *share = [MHShareViewController new];
+    share.pageIndex = self.pageIndex;
+    share.galleryItems = self.galleryItems;
+    [self.navigationController pushViewController:share animated:YES];
 }
 
 -(void)updateDescriptionLabelForIndex:(NSInteger)index{
@@ -395,9 +414,9 @@
     
     if (item.galleryType == MHGalleryTypeVideo) {
         [self changeToPlayButton];
-        self.toolbar.items = @[self.shareBarButton,flex,self.leftBarButton,flex,self.playStopBarButton,flex,self.rightBarButton,flex,fixed];
+        self.toolbar.items = @[self.shareBarButton,flex,self.leftBarButton,flex,self.playStopBarButton,flex,self.rightBarButton,flex,self.organizeBarButton,fixed];
     }else{
-        self.toolbar.items =@[self.shareBarButton,flex,self.leftBarButton,flex,self.rightBarButton,flex,fixed];
+        self.toolbar.items =@[self.shareBarButton,flex,self.leftBarButton,flex,self.rightBarButton,flex,self.organizeBarButton,fixed];
     }
 }
 
@@ -902,6 +921,11 @@
             }
         }];
     }
+}
+
+- (void)dealloc
+{
+    [self removeAllMoviePlayerViewsAndNotifications];
 }
 
 -(void)handleGeneratedThumb:(UIImage*)image

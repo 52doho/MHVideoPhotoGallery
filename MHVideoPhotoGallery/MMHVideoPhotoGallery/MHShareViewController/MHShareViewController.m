@@ -202,6 +202,7 @@
 @property (nonatomic,strong) NSArray *shareDataSourceStart;
 @property (nonatomic,strong) NSMutableArray *selectedRows;
 @property (nonatomic)        CGFloat startPointScroll;
+@property (nonatomic,strong) MHShareItem *deleteObject;
 @property (nonatomic,strong) MHShareItem *saveObject;
 @property (nonatomic,strong) MHShareItem *mailObject;
 @property (nonatomic,strong) MHShareItem *messageObject;
@@ -218,6 +219,11 @@
 
 -(void)initShareObjects{
     
+    self.deleteObject = [MHShareItem.alloc initWithImageName:@"deleteMH"
+                                                     title:MHGalleryLocalizedString(@"shareview.delete")
+                                      withMaxNumberOfItems:MAXFLOAT
+                                              withSelector:@"deleteImages:"
+                                          onViewController:self];
     
     self.saveObject = [MHShareItem.alloc initWithImageName:@"activtyMH"
                                                      title:MHGalleryLocalizedString(@"shareview.save.cameraRoll")
@@ -387,7 +393,7 @@
     }
     
     self.shareDataSource = [NSMutableArray arrayWithArray:@[shareObjectAvailable,
-                                                            @[[self saveObject]]
+                                                            @[[self saveObject], self.deleteObject]
                                                             ]];
     
     self.shareDataSourceStart = [NSArray arrayWithArray:self.shareDataSource];
@@ -958,6 +964,20 @@
     } saveDataToCameraRoll:YES];
 }
 
+-(void)deleteImages:(NSArray*)object{
+    [self getAllImagesForSelectedRows:^(NSArray *images) {
+        for (MHImageURL *dataURL in images) {
+            if ([[NSFileManager defaultManager] fileExistsAtPath:dataURL.URL]) {
+                [[NSFileManager defaultManager] removeItemAtPath:dataURL.URL error:NULL];
+            }
+        }
+        
+        [self.selectedRows removeAllObjects];
+        [self.collectionView reloadData];
+        [self updateCollectionView];
+        [self updateTitle];
+    } saveDataToCameraRoll:NO];
+}
 
 
 -(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{

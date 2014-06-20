@@ -16,4 +16,4 @@
 "shareview.title.select.singular" = "%@ Bild ausgewählt";
 "shareview.download"              = "Daten herunterladen\n";
 "shareview.download.cancel"       = "Abbrechen";
-
+"shareview.delete"                = "Delete";

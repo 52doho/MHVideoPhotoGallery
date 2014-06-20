@@ -72,6 +72,14 @@
     
 }
 
+- (void)setGalleryItems:(NSArray *)galleryItems
+{
+    if (_galleryItems != galleryItems) {
+        _galleryItems = galleryItems;
+        [self.collectionView reloadData];
+    }
+}
+
 -(UIStatusBarStyle)preferredStatusBarStyle{
     return self.galleryViewController.preferredStatusBarStyleMH;
 }

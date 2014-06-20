@@ -32,7 +32,11 @@ typedef NS_ENUM(NSUInteger, MHBackButtonState) {
 @property (nonatomic,strong) UIColor *barButtonsTintColor;
 
 @property (nonatomic)        BOOL showMHShareViewInsteadOfActivityViewController;
-@property (nonatomic)        BOOL hideShare;
+@property (nonatomic)        BOOL hideShareButton;
+@property (nonatomic)        BOOL hideShareObjects;
+@property (nonatomic)        BOOL hideSaveToCameraRoll;
+@property (nonatomic)        BOOL hideDeleteImages;
+@property (nonatomic)        BOOL hideOrganizeButton;
 @property (nonatomic)        BOOL useCustomBackButtonImageOnImageViewer;
 @property (nonatomic)        BOOL showOverView;
 @property (nonatomic)        MHBackButtonState backButtonState;

@@ -22,7 +22,8 @@
 
 @protocol MHGalleryDataSource<NSObject>
 
-
+@optional
+- (void)deleteItemIndex:(NSInteger)index;
 
 @required
 /**
