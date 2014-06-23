@@ -70,9 +70,12 @@
     
     CGRect cellFrame  = [toViewController.collectionView.collectionViewLayout layoutAttributesForItemAtIndexPath:[NSIndexPath indexPathForRow:toViewController.currentPage inSection:0]].frame;
 
-    [toViewController.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:toViewController.currentPage inSection:0]
-                                atScrollPosition:UICollectionViewScrollPositionCenteredVertically
-                                        animated:NO];
+    NSInteger items = [toViewController collectionView:toViewController.collectionView numberOfItemsInSection:0];
+    if (toViewController.currentPage < items) {
+        [toViewController.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:toViewController.currentPage inSection:0]
+                                                atScrollPosition:UICollectionViewScrollPositionCenteredVertically
+                                                        animated:NO];
+    }
     
     [toViewController.collectionView scrollRectToVisible:cellFrame
                                     animated:NO];

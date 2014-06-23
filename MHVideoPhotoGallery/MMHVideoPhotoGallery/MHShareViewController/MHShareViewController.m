@@ -196,7 +196,7 @@
 @end
 
 
-@interface MHShareViewController ()
+@interface MHShareViewController ()<UIActionSheetDelegate>
 @property (nonatomic,strong) MHDownloadView *downloadView;
 @property (nonatomic,strong) NSMutableArray *shareDataSource;
 @property (nonatomic,strong) NSArray *shareDataSourceStart;
@@ -212,6 +212,7 @@
 @property (nonatomic)        NSInteger saveCounter;
 @property (nonatomic,strong) NSMutableArray *dataDownload;
 @property (nonatomic,strong) NSMutableArray *sessions;
+@property (nonatomic,strong) UICollectionViewCell *cellSelected;
 
 @end
 
@@ -237,23 +238,29 @@
                                               withSelector:@"mailImages:"
                                           onViewController:self];
     
-    self.messageObject = [MHShareItem.alloc initWithImageName:@"messageMH"
-                                                        title:MHGalleryLocalizedString(@"shareview.message")
-                                         withMaxNumberOfItems:15
-                                                 withSelector:@"smsImages:"
-                                             onViewController:self];
+    if ([MFMessageComposeViewController canSendText]) {
+        self.messageObject = [MHShareItem.alloc initWithImageName:@"messageMH"
+                                                            title:MHGalleryLocalizedString(@"shareview.message")
+                                             withMaxNumberOfItems:15
+                                                     withSelector:@"smsImages:"
+                                                 onViewController:self];
+    }
     
-    self.twitterObject = [MHShareItem.alloc initWithImageName:@"twitterMH"
-                                                        title:@"Twitter"
-                                         withMaxNumberOfItems:2
-                                                 withSelector:@"twShareImages:"
-                                             onViewController:self] ;
+    if([SLComposeViewController isAvailableForServiceType:SLServiceTypeFacebook]){
+        self.faceBookObject = [MHShareItem.alloc initWithImageName:@"facebookMH"
+                                                             title:@"Facebook"
+                                              withMaxNumberOfItems:10
+                                                      withSelector:@"fbShareImages:"
+                                                  onViewController:self];
+    }
     
-    self.faceBookObject = [MHShareItem.alloc initWithImageName:@"facebookMH"
-                                                         title:@"Facebook"
-                                          withMaxNumberOfItems:10
-                                                  withSelector:@"fbShareImages:"
-                                              onViewController:self];
+    if([SLComposeViewController isAvailableForServiceType:SLServiceTypeTwitter]){
+        self.twitterObject = [MHShareItem.alloc initWithImageName:@"twitterMH"
+                                                            title:@"Twitter"
+                                             withMaxNumberOfItems:2
+                                                     withSelector:@"twShareImages:"
+                                                 onViewController:self] ;
+    }
 }
 
 -(void)cancelPressed{
@@ -379,22 +386,28 @@
     [self initShareObjects];
     [self updateTitle];
     
-    NSMutableArray *shareObjectAvailable = [NSMutableArray arrayWithArray:@[self.messageObject,
-                                                                            self.mailObject,
-                                                                            self.twitterObject,
-                                                                            self.faceBookObject]];
+    NSMutableArray *shareObjectAvailable = [NSMutableArray array];
+    if (self.messageObject)
+        [shareObjectAvailable addObject:self.messageObject];
+    if (self.mailObject)
+        [shareObjectAvailable addObject:self.mailObject];
+    if (self.twitterObject)
+        [shareObjectAvailable addObject:self.twitterObject];
+    if (self.faceBookObject)
+        [shareObjectAvailable addObject:self.faceBookObject];
     
+    self.shareDataSource = [NSMutableArray array];
     
-    if(![SLComposeViewController isAvailableForServiceType:SLServiceTypeFacebook]){
-        [shareObjectAvailable removeObject:self.faceBookObject];
-    }
-    if(![SLComposeViewController isAvailableForServiceType:SLServiceTypeTwitter]){
-        [shareObjectAvailable removeObject:self.twitterObject];
-    }
+    if (self.gallerViewController.UICustomization.hideShareObjects)
+        [shareObjectAvailable removeAllObjects];
+    [self.shareDataSource addObject:shareObjectAvailable];
     
-    self.shareDataSource = [NSMutableArray arrayWithArray:@[shareObjectAvailable,
-                                                            @[[self saveObject], self.deleteObject]
-                                                            ]];
+    NSMutableArray *aryActions = [NSMutableArray array];
+    if (!self.gallerViewController.UICustomization.hideDeleteImages)
+        [aryActions addObject:self.deleteObject];
+    if (!self.gallerViewController.UICustomization.hideSaveToCameraRoll)
+        [aryActions addObject:self.saveObject];
+    [self.shareDataSource addObject:aryActions];
     
     self.shareDataSourceStart = [NSArray arrayWithArray:self.shareDataSource];
     if(UIApplication.sharedApplication.statusBarOrientation != UIInterfaceOrientationPortrait){
@@ -965,18 +978,7 @@
 }
 
 -(void)deleteImages:(NSArray*)object{
-    [self getAllImagesForSelectedRows:^(NSArray *images) {
-        for (MHImageURL *dataURL in images) {
-            if ([[NSFileManager defaultManager] fileExistsAtPath:dataURL.URL]) {
-                [[NSFileManager defaultManager] removeItemAtPath:dataURL.URL error:NULL];
-            }
-        }
-        
-        [self.selectedRows removeAllObjects];
-        [self.collectionView reloadData];
-        [self updateCollectionView];
-        [self updateTitle];
-    } saveDataToCameraRoll:NO];
+    [[UIActionSheet.alloc initWithTitle:MHGalleryLocalizedString(@"shareview.delete.conform") delegate:self cancelButtonTitle:MHGalleryLocalizedString(@"shareview.download.cancel") destructiveButtonTitle:MHGalleryLocalizedString(@"shareview.delete") otherButtonTitles:nil] showFromRect:_cellSelected.frame inView:_cellSelected animated:YES];
 }
 
 
@@ -1003,8 +1005,9 @@
         [self updateCollectionView];
         [self updateTitle];
     }else{
-        MHShareItem *item = self.shareDataSource[collectionView.tag][indexPath.row];
+        _cellSelected = [collectionView cellForItemAtIndexPath:indexPath];
         
+        MHShareItem *item = self.shareDataSource[collectionView.tag][indexPath.row];
         SEL selector = NSSelectorFromString(item.selectorName);
         
         SuppressPerformSelectorLeakWarning(
@@ -1019,6 +1022,31 @@
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+#pragma mark - UIActionSheetDelegate -
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == actionSheet.destructiveButtonIndex) {
+        [self getAllImagesForSelectedRows:^(NSArray *images) {
+            for (NSIndexPath *indexPath in self.selectedRows) {
+                [self.gallerViewController.dataSource deleteItemIndex:indexPath.row];
+            }
+            
+            for (MHImageURL *dataURL in images) {
+                NSURL *url = [NSURL URLWithString:dataURL.URL];
+                NSString *path = url.path;
+                if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
+                    [[NSFileManager defaultManager] removeItemAtPath:path error:NULL];
+                }
+            }
+            
+            [self.selectedRows removeAllObjects];
+            [self.collectionView reloadData];
+            [self updateCollectionView];
+            [self updateTitle];
+        } saveDataToCameraRoll:NO];
+    }
 }
 
 @end

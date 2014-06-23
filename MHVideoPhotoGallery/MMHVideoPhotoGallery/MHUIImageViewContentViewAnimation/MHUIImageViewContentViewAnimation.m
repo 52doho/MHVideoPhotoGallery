@@ -86,7 +86,10 @@
 
 - (void)initToScaleAspectFitToFrame:(CGRect)newFrame{
     [self checkImageViewHasImage];
-    float ratioImage = (self.imageView.image.size.width)/(self.imageView.image.size.height);
+    float ratioImage = 1;
+    if (self.imageView.image.size.height != 0) {
+        ratioImage = (self.imageView.image.size.width)/(self.imageView.image.size.height);
+    }
     
     if ([self choiseFunctionWithRationImg:ratioImage forFrame:self.frame]) {
         self.imageView.frame = CGRectMake( - (self.frame.size.height * ratioImage - self.frame.size.width) / 2.0f, 0, self.frame.size.height * ratioImage, self.frame.size.height);

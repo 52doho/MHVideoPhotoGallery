@@ -57,7 +57,7 @@
 
 - (void)deleteItemIndex:(NSInteger)index
 {
-    if (index >=0 && index < _galleryItems.count) {
+    if (index >= 0 && index < _galleryItems.count) {
         NSMutableArray *aryItems = [NSMutableArray arrayWithArray:_galleryItems];
         [aryItems removeObjectAtIndex:index];
         self.galleryItems = aryItems;
